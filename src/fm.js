@@ -1023,13 +1023,23 @@
       c = (filter) ? filter(c) : c;
       var k = c[0];
       var v = c[1];
-      var f = _.ar.filter(k.replace(/^\[/, '').split('['), function(n){ return n !== ''; });
+      var f = _.ar.filter(
+        k.replace(/^\[/, '').split('['),
+        function(n){
+          return n !== '';
+        }
+      );
+
       var basekey = ((f.length > 0) ? f[0] : k).replace(/[\[\]]/g, '');
       var nextkey = f.slice(1).reduce(function(m, n){
         return m + '[' + n.replace(/[\[\]]/g, '') + ']';
       }, '');
 
-      if(!basekey) return;
+      if(f[0] && f[0] == "]"){
+        basekey = "0";
+      }
+
+      if(basekey == "") return;
 
       // Numbered properties
       basekey = (basekey.match(/^[0-9]+$/)) ? parseInt(basekey) : basekey;
