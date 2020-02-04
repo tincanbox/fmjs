@@ -202,6 +202,7 @@
     ,['reject' , 'rejected']].map(function(tpl){
       self[tpl[0]] = function(r){
         if(state){
+          console.log(self, state);
           console.error('Expired promise can not be triggered again.');
           return;
         };
@@ -510,7 +511,7 @@
     }else{
       var m = 'to_' + type;
       var vt = _.vr.type(v);
-      if(_ob.has(_.vr, m)){
+      if(_.ob.has(_.vr, m)){
         return _.vr[m](v);
       }else{
         raise("vr.cast: Failed to cast " + vt + " to " + type + ". There is no available vr.to_"+type+"() method.");
@@ -703,7 +704,8 @@
    *   ...
    * ) -> Object
    *
-   * Merge objects recursively.
+   * Merges objects recursively.
+   * Treats first argument as a destination.
    */
   _.ob.merge = function(/* Object, Object, Object, ... */){
     var a = _.ar.clone(arguments), or = a.shift();
@@ -715,7 +717,7 @@
    *   Array = [Function...]. "Function"s should be named-function.
    * ) -> Object
    *
-   * apply fn.pack to a specific object.
+   * applies fn.pack to a specific object.
    */
   _.ob.include = function(ob, fns){
     return _.ob.merge(ob, _.fn.pack(fns));
@@ -726,7 +728,7 @@
    *   Object
    * ) -> Object
    *
-   * Merge object to object.
+   * Merges object to object.
    *
    */
   _.ob.combine = function(m, o){
@@ -745,7 +747,7 @@
    *
    * !! Has interdependency with ob.merge !!
    *
-   * Assign properties to Object.
+   * Assigns properties to Object.
    *
    */
   _.ob.assign = function(o, k, v){
@@ -789,7 +791,7 @@
    * ( Object
    * ) -> Array
    *
-   * Return Object keys as Array.
+   * Returns Object keys as Array.
    */
   _.ob.keys = function(o){
     var k = [];
@@ -835,7 +837,7 @@
    *   Array = Property name list
    * ) -> Object
    *
-   * Pick object properties with keys.
+   * Picks object properties with keys.
    */
   _.ob.pick = function(o, ks){
     var ret = {};
@@ -907,6 +909,8 @@
    * ( Object
    *   Object
    * ) -> Object
+   *
+   * Finds differences between multiple objects.
    */
   _.ob.diff = function(){
     var args = _.ar.clone(arguments);
@@ -1007,8 +1011,7 @@
   /* ob.unserialize
    * ( Array = Results of ob.serialize
    *   ?Object = Destination object.
-   *   ?Function = Filter
-   *   (
+   *   ?Function(
    *     String
    *     a
    *   )
@@ -1095,7 +1098,7 @@
    *   Array = [String...]  # Array of types
    * ) -> Boolean
    *
-   * Apply valid() to all passed values.
+   * Applies valid() to all passed values.
    *
    * _.ar.valid([1, 2, 3], 'integer');
    * > true
@@ -1173,7 +1176,7 @@
    *   Integer|String = To
    * ) -> Array
    *
-   * Make ranged array.
+   * Makes ranged array.
    *
    * ar.range(-2, 2)
    * >> [-2, -1, 0, ...]
@@ -1216,13 +1219,12 @@
    * ( Integer = 0 To X
    * ) -> Array
    *
-   * Generate Prime list
+   * Generates Prime list
    *
    */
-  _.ar.prime = function(t){
-    var m=[1],r=[];
-    for(var i=1;i<=t;i++) r.push(i);
-    for(var n=1;n<=t;n++)
+  _.ar.prime = function(f, t){
+    var m=[1];
+    for(var n=f;n<=t;n++)
       for(var i=2;i<=n;i++){if(i<n&&n%i==0){break;}if(i>n/2){m.push(n);break;}}
     return m;
   }
@@ -1259,7 +1261,7 @@
    *   ...
    * ) -> Array
    *
-   * Find differences among arrays.
+   * Finds differences among arrays.
    */
   _.ar.diff = function(/* a, a, a ... */){
     var d = [];
@@ -1276,7 +1278,9 @@
    * ( Array
    *   a
    *   ?Boolean = Flag for "get all index"
-   * )
+   * ) -> Array
+   *
+   * Finds indexs which matches supplied criteria n.
    */
   _.ar.index = function(a, n, all){
     var r = [];
@@ -1798,16 +1802,16 @@
   }
 
   _.async.homonogenize = function(ar){
-    return _.ar.map(ar, function(p, i){
-      if(!(p instanceof (_.config.promise))){
-        p = _.promise(function(res, rej){
+    return _.ar.each(ar, function(p, i){
+      if(!_.ob.has(p, "then")){
+        ar[i] = _.promise(function(res, rej){
           (p) ? res(p) : rej(p);
         });
       }
     });
   }
 
-  /* fn.swear
+  /* async.swear
    * ( Array = Promises
    * ) -> FM_Promise
    */
@@ -1824,6 +1828,7 @@
     (available.length === 0) && _.config.promise.resolve([]);
 
     _.ar.each(_.async.homonogenize(available), function(p, i){
+      console.log("sw", p, i);
       p.always(function(s){
         results[i] = (arguments.length == 2) ? s : _.ar.clone(arguments).slice(0, -1);
         return arguments[arguments.length - 1];
@@ -1936,7 +1941,7 @@
       };
       var error = function(i){
         return function(r){
-          fail(rs);
+          fail(r, rs);
         }
       };
       const nxt = function(){

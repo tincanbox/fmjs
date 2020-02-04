@@ -3,7 +3,7 @@
 <head>
 <title>FMJS</title>
 <script type="text/javascript" src="./src/fm.js"></script>
-<script src="./asset/codesnapjs/src/codesnap.js"></script>
+<script src="https://gitcdn.link/cdn/tincanbox/codesnapjs/master/src/codesnap.js"></script>
 
 <link rel="stylesheet" href="./asset/extra/prism/prism.css">
 <script type="text/javascript" src="./asset/extra/prism/prism.js" data-default-language="javascript"></script>
@@ -672,8 +672,8 @@ var files = [
       + ")-> Function"
       + "</pre>"
   }],
-  ['fn.promise', {
-    title: "fn.promise",
+  ['async.promise', {
+    title: "async.promise",
     description:
       "Returns a FM_Promise object."
       + "<pre>"
@@ -690,8 +690,8 @@ var files = [
       + "  reject( a )\n"
       + "</pre>"
   }],
-  ['fn.swear', {
-    title: "fn.swear",
+  ['async.swear', {
+    title: "async.swear",
     description: "Observe many of FM_Promise. Similar to jQuery.when()."
   }],
   ['event.create', {
@@ -878,38 +878,16 @@ var prevgroup = null;
       result = undefined;
       sample = undefined;
       revert = undefined;
-      actions = undefined;
     },
-    loaded: function(f, src, data, wrp){
-      var self = this;
+    loaded: function(f, src, data, els){
       if(result !== undefined){
-        self.render_result(function(res){
-          res.innerHTML = JSON.stringify(result);
-          Prism.highlightElement(res);
-        });
+        var res = document.createElement('PRE');
+        res.classList.add('codesnap-result');
+        els.wrap.appendChild(res);
+        res.innerHTML = JSON.stringify(result);
+        Prism.highlightElement(res);
       }
-      
-      if(actions){
-        for(var k in actions){
-          self.append_button(k, function(btn){
-            FM.event.bind(btn, 'click', actions[k]);
-          });
-        }
-      }
-
-      if(sample !== undefined && typeof sample === 'function'){
-        self.append_button("run", function(btn){
-          FM.event.bind(btn, 'click', sample);
-        });
-      }
-      if(revert !== undefined && typeof revert === 'function'){
-        self.append_button("revert", function(btn){
-          FM.event.bind(btn, 'click', revert);
-        });
-      }
-      Prism.highlightElement(
-        document.getElementById(wrp.id + '-code')
-      );
+      Prism.highlightElement(els.code);
     },
     indexed: function(wrap, anc, file){
 

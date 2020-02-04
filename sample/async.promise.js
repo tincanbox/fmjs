@@ -1,5 +1,5 @@
 // Make new FM_Promise with callbacks.
-var d = FM.promise(
+var d = FM.async.promise(
   // Register resolver.
   function(resolve) {
     setTimeout(function(){
@@ -17,7 +17,7 @@ var d = FM.promise(
 d.then(
   function(s, p){
     p.incr ++;
-    return FM.fn.promise(function(r){
+    return FM.async.promise(function(r){
       setTimeout(function(){
         r(p);
       }, 2000);
@@ -29,14 +29,14 @@ d.then(
 ).then(
   function(s, p){
     return p.then(function(a, b){
-      console.log('[fn.promise]', b);
+      console.log('[async.promise]', b);
     });
   }
 ).then(
   function(s, p){
     setTimeout(function(){
       p.then(function(){
-        console.log('[fn.promise]', 'DONE');
+        console.log('[async.promise]', 'DONE');
       });
     }, 3000);
   }
