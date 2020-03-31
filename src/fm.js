@@ -2007,7 +2007,7 @@
             var stat = clb(rs, rj);
             (_.vr.is_pr(stat))
               ? stat.catch(function(e){
-                  rj("FM.async.poll: Callback rejected. => " + FM.vr.stringify(e));
+                  rj(e);
                 }).then(watch)
               : watch();
           }catch(e){
